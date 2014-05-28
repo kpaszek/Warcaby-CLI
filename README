@@ -1,0 +1,51 @@
+Aby skompilować należy uruchomić komendy:
+gcc client.c -o server -Wall
+gcc client.c -o client -Wall
+
+---
+
+Aby uruchomić należy wpierw włączyć server komendą:
+./server
+a następnie w dowolnej ilości można uruchamiać aplikacje klienckie:
+./client
+
+---
+
+Opis zawartości pliku client.c:
+Jest to plik źródłowy z kodem części klienckiej projektu. Na początku są deklaracje wszystkich potrzebnych zmiennych. Program został podzielony na funkcje rozdzielające kod odpowiedzialny za różne części działania na logiczne jednostki funkcyjne.
+Procedura endGame() służy obsłudze C-c, które jest domyślną komendą wychodzącą z aplikacji. Wysyła ona komunikat wylogowania do serwera oraz sprząta utworzone wcześniej struktury
+
+prepareBoard() oraz showBoard() to funkcje do obsługi planszy, pierwsza ją zeruje i ustawia odpowiednie wartości białe/czarne, druga ją pokazuje na ekranie terminala.
+
+prepareStruct() służy do tworzenia potrzebnych w aplikacji kolejek i pamięci współdzielonej
+
+loginProcedure() zajmuje się pobraniem od użytkownika potrzebnych do gry danych, wysłaniem ich do serwera i odpowiednią reakcją na odpowiedź serwera.
+
+chooseCommand() to procedura oczekująca na komendę użytkownika i wysyłająca ją do serwera
+
+listGames() wyświetla otrzymaną od serwera listę graczy oraz pobiera od użytkownika wybór gry, oczekując też na komunikat startu od serwera
+
+createNewGame() to procedura wysyłająca do serwera żądanie utworzenia nowej gry oraz oczekująca na drugiego gracza w założonym przez siebie pokoju
+
+procedura game() służy do przeprowadzania właściwej rozgrywki, gdzie gracze na zmianę wykonują ruchy, wysyłają je do siebie i odbierają je od przeciwnika. Procedura wyświetla planszę, pyta gracza o ruch oraz ilość zbitych pionków, a następnie wysyła to do przeciwnika. W przypadku ruchu oponenta program czeka na wiadomość o jego ruchu
+
+Główna część programu to wywoływanie po kolei procedur mający utworzyć/dołączyć gracza do gry a następnie procedury samej gry. Dzieje się to w pętli, aby po skończeniu gry można było zacząć nową.
+
+Opis zawartości pliku server.c:
+Na początku kodu znajdują się deklaracje potrzebnych zmiennych. Kolejne są procedury służące wyświetlaniu listy graczy i gier w celu śledzenia aktywności serwera podczas jego działania. Następna procedura przygotowująca jest analogiczna do tej z pliku client.c, przygotowuje ona potrzebne kolejki i "zeruje" tablice.
+
+Procedura listenForNewPlayers() oczekuje na komunikat logowania od graczy na głównej kolejce i w przypadku otrzymania takiego, dołącza gracza do listy zalogowanych, zapisując otrzymane od niego dane w swoich lokalnych strukturach. W przypadku braku miejsca lub występowania nicku odpowiednio reaguje.
+
+listGames() służy przygotowaniu i wysłaniu przystosowanej do preferencji pytającego gracza listy gier, do których mógłby dołączyć a następnie wysyła je do niego.
+
+createNewGame() tworzy nową grę na żądanie gracza i wysyła do niego potrzebne jej dane (m. in. też id kolejki gry).
+
+addSecondPlayer() dołącza proszącego o to gracza do już istniejącej gry i rozpoczyna grę u obu graczy
+
+endGame() służy obsłudze zakończenia gry w przypadku kiedy jeden z graczy wysyła wiadomość o końcu gry. Następuje wymazanie danych związanych z tą grą.
+
+logout() obsługuje wylogowanie się gracza w dowolnym momencie działania jego programu. Wymazuje przypisane mu dane z pamięci i kończy grę, jeśli w takiej uczestniczył.
+
+endServer() wymazuje główną kolejkę programu i zakańcza jego działanie.
+
+Główna pętla programu składa się z trzech części, gdzie po nasłuchiwaniu na nowego gracza sprawdza prywatne kolejki wszystkich graczy w oczekiwaniu na polecenia od nich, następnie przechodzi po wszystkich pokojach gry sprawdzając czy nie ma do obsłużenia pokoju a na końcu zajmuje się pośredniczeniem w wymianie ruchów między graczami.
